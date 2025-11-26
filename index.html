@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recipes Dashboard</title>
+    <style>
+        :root{--bg:#f5f7fb;--card:#fff;--muted:#6b7280;--accent:#2563eb}
+        *{box-sizing:border-box}
+        body{font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);margin:0;color:#111}
+        .app{max-width:1200px;margin:24px auto;padding:16px}
+        .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+        .title{display:flex;align-items:baseline;gap:12px}
+        .title h1{margin:0;font-size:20px}
+        .controls{display:flex;gap:12px;align-items:center}
+        .icon-btn{background:transparent;border:0;cursor:pointer;padding:6px;border-radius:8px}
+        .icon-badge{background:#ef4444;color:#fff;padding:2px 6px;border-radius:999px;font-size:12px;margin-left:6px}
+        .search{padding:8px 12px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;min-width:220px}
+        .select{padding:8px;border-radius:8px;border:1px solid #e5e7eb;background:#fff}
+        .stats{font-size:13px;color:var(--muted)}
+
+        .layout{display:grid;grid-template-columns:260px 1fr;gap:20px}
+        .sidebar{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(16,24,40,0.04)}
+        .filters h4{margin:8px 0}
+        .category-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow:auto;padding-right:6px}
+        .range-row{display:flex;gap:8px;align-items:center}
+        .btn{background:var(--accent);color:#fff;padding:8px 10px;border-radius:8px;border:none;cursor:pointer}
+
+        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+        .card{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:0 6px 18px rgba(16,24,40,0.06);display:flex;flex-direction:column}
+        .card img{width:100%;height:200px;object-fit:cover;background:#f3f4f6}
+        .card-body{padding:12px;display:flex;flex-direction:column;gap:8px}
+        .card-title{font-weight:600;font-size:15px;margin:0}
+        .card-sub{color:var(--muted);font-size:13px}
+        .price-row{display:flex;align-items:center;justify-content:space-between;margin-top:auto}
+        .price{font-weight:700;color:var(--accent)}
+        .badge{background:#eef2ff;color:#1e3a8a;padding:6px 8px;border-radius:999px;font-size:12px}
+
+        .loading{display:flex;align-items:center;justify-content:center;padding:48px;color:var(--muted)}
+
+        /* cart panel */
+        .cart-panel{position:fixed;right:18px;top:18px;width:360px;max-width:92vw;height:80vh;background:var(--card);box-shadow:0 18px 40px rgba(2,6,23,0.2);border-radius:12px;overflow:auto;transform:translateY(-20px);transition:opacity .18s,transform .18s;opacity:0;pointer-events:none;padding:12px}
+        .cart-panel.open{opacity:1;transform:translateY(0);pointer-events:auto}
+        .cart-item{display:flex;gap:8px;align-items:center;padding:8px 4px;border-bottom:1px solid #f3f4f6}
+        .cart-item img{width:56px;height:44px;object-fit:cover;border-radius:6px}
+        .qty{display:inline-flex;align-items:center;gap:6px}
+        .small-btn{padding:6px 8px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer}
+
+        @media (max-width:900px){.layout{grid-template-columns:1fr}.sidebar{order:2}}
+        @media (max-width:520px){.topbar{flex-direction:column;align-items:flex-start}.search{width:100%}}
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="topbar">
+            <div class="title">
+                <h1>Recipes Dashboard</h1>
+                <div class="stats" id="stats">Loading…</div>
+            </div>
+
+            <div class="controls">
+                <input id="search" class="search" placeholder="Search recipes, ingredients or category..." />
+                <select id="sort" class="select">
+                    <option value="default">Sort: Recommended</option>
+                    <option value="time-asc">Time: Low → High</option>
+                    <option value="time-desc">Time: High → Low</option>
+                </select>
+                <button id="favToggle" class="icon-btn" title="Show favorites">❤ <span id="favCount" class="icon-badge" style="display:none">0</span></button>
+                <button id="cartToggle" class="icon-btn" title="Open cart">🛒 <span id="cartCount" class="icon-badge" style="display:none">0</span></button>
+            </div>
+        </div>
+
+        <div class="layout">
+            <aside class="sidebar" id="sidebar">
+                <div class="filters">
+                    <h4>Search</h4>
+                    <input id="search2" class="search" placeholder="Search recipes, ingredients or category..." />
+
+                    <h4>Categories</h4>
+                    <div id="categories" class="category-list">Loading…</div>
+
+                    <h4>Time Range (min)</h4>
+                    <div class="range-row">
+                        <input type="number" id="price-min" style="width:80px;padding:6px;border-radius:6px;border:1px solid #e5e7eb" />
+                        <span style="color:var(--muted)">—</span>
+                        <input type="number" id="price-max" style="width:80px;padding:6px;border-radius:6px;border:1px solid #e5e7eb" />
+                    </div>
+
+                    <h4>Rating</h4>
+                    <select id="rating" class="select">
+                        <option value="0">Any rating</option>
+                        <option value="1">1★ and up</option>
+                        <option value="2">2★ and up</option>
+                        <option value="3">3★ and up</option>
+                        <option value="4">4★ and up</option>
+                    </select>
+
+                    <div style="margin-top:12px;display:flex;gap:8px">
+                        <button id="applyBtn" class="btn">Apply</button>
+                        <button id="resetBtn" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer">Reset</button>
+                    </div>
+                </div>
+            </aside>
+
+            <main>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px">
+                    <div style="display:flex;gap:12px;align-items:center">
+                        <!-- controls are in the topbar -->
+                    </div>
+                    <div class="stats" id="statsTop">Loading…</div>
+                </div>
+
+                <div id="grid" class="grid"></div>
+                <div id="loading" class="loading">Fetching recipes…</div>
+                <!-- cart panel -->
+                <div id="cartPanel" class="cart-panel" aria-hidden="true">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                        <strong>Your Cart</strong>
+                        <button id="closeCart" class="small-btn">Close</button>
+                    </div>
+                    <div id="cartList">
+                        <div style="color:var(--muted);padding:12px;text-align:center">Cart is empty</div>
+                    </div>
+                    <div id="cartFooter" style="padding-top:8px;display:none;justify-content:space-between;align-items:center">
+                        <div style="color:var(--muted)"><span id="cartItemsCount">0</span> items</div>
+                        <div><button id="clearCart" class="small-btn">Clear</button></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const API = 'https://dummyjson.com/recipes';
+        const grid = document.getElementById('grid');
+        const loading = document.getElementById('loading');
+        const stats = document.getElementById('stats');
+        const statsTop = document.getElementById('statsTop');
+        const searchEl = document.getElementById('search');
+        const searchEl2 = document.getElementById('search2');
+        const sortEl = document.getElementById('sort');
+        const categoriesEl = document.getElementById('categories');
+        const priceMinEl = document.getElementById('price-min');
+        const priceMaxEl = document.getElementById('price-max');
+        const ratingEl = document.getElementById('rating');
+        const applyBtn = document.getElementById('applyBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        let products = []; // we'll keep the variable name for brevity
+        let filtered = [];
+        let allCategories = [];
+        let priceBounds = {min:0,max:0};
+
+        function getTime(p){
+            // possible time fields in recipe objects
+            const keys = ['time','totalTime','cookTime','prepTime','duration','readyInMinutes'];
+            for(const k of keys){
+                if(p[k] != null){
+                    const n = Number(p[k]);
+                    if(!Number.isNaN(n)) return n;
+                }
+            }
+            return 0;
+        }
+
+        function render(items){
+            if(!items.length){
+                grid.innerHTML = '<div style="grid-column:1/-1;padding:28px;text-align:center;color:var(--muted)">No recipes found</div>';
+                return;
+            }
+            grid.innerHTML = items.map(p => {
+                const title = p.title || p.name || 'Untitled recipe';
+                const img = p.image || (p.images && p.images[0]) || 'https://via.placeholder.com/400x300?text=No+Image';
+                const cat = p.category || p.cuisine || p.type || '';
+                const time = getTime(p);
+                const servings = p.servings || p.yield || p.servingsCount || '';
+                const ingredientsCount = Array.isArray(p.ingredients) ? p.ingredients.length : (p.ingredients ? 1 : 0);
+
+                    return `
+                    <article class="card" data-id="${p.id}">
+                        <img src="${img}" alt="${escapeHtml(title)}" />
+                        <div class="card-body">
+                            <h3 class="card-title">${escapeHtml(title)}</h3>
+                            <div class="card-sub">${escapeHtml(cat)}</div>
+                            <div style="font-size:13px;color:var(--muted)">Ingredients: ${ingredientsCount} • Servings: ${servings || '—'}</div>
+                            <div class="price-row">
+                                <div class="price">${time ? time + ' min' : '—'}</div>
+                                <div style="display:flex;gap:8px;align-items:center">
+                                  <button class="icon-btn fav-btn" data-id="${p.id}" title="Toggle favorite">❤</button>
+                                  <button class="btn add-cart" data-id="${p.id}">Add to cart</button>
+                                </div>
+                            </div>
+                        </div>
+                    </article>`;
+            }).join('');
+        }
+
+        function escapeHtml(s){
+            return String(s).replace(/[&<>\"]+/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+        }
+
+        function applyFilters(){
+            const q = (searchEl.value || searchEl2.value || '').trim().toLowerCase();
+
+            const selectedCats = Array.from(categoriesEl.querySelectorAll('input[type="checkbox"]:checked')).map(i=>i.value);
+            const minTime = Number(priceMinEl.value || priceBounds.min);
+            const maxTime = Number(priceMaxEl.value || priceBounds.max);
+            const minRating = Number(ratingEl.value || 0);
+
+            let out = products.filter(p => {
+                const title = (p.title || p.name || '').toString().toLowerCase();
+                const desc = (p.description || '').toString().toLowerCase();
+                const cat = (p.category || p.cuisine || p.type || '').toString().toLowerCase();
+
+                if(q){
+                    const inText = title.includes(q) || cat.includes(q) || desc.includes(q) || (Array.isArray(p.ingredients) && p.ingredients.join(' ').toLowerCase().includes(q));
+                    if(!inText) return false;
+                }
+                if(selectedCats.length && !selectedCats.includes(p.category) && !selectedCats.includes(p.cuisine) && !selectedCats.includes(p.type)) return false;
+
+                const t = getTime(p);
+                if(t < minTime || t > maxTime) return false;
+                if((p.rating ?? 0) < minRating) return false;
+                return true;
+            });
+
+            const sort = sortEl.value;
+            if(sort === 'time-asc') out.sort((a,b) => getTime(a) - getTime(b));
+            if(sort === 'time-desc') out.sort((a,b) => getTime(b) - getTime(a));
+
+            filtered = out;
+            // if favorites-only mode is on, filter to favorites
+            if(showOnlyFavs){ out = out.filter(p => isFavorite(p.id)); }
+            stats.textContent = `${out.length} recipes`;
+            statsTop.textContent = `${out.length} results`;
+            render(out);
+            // after render, wire up card buttons (fav & cart)
+            wireCardButtons();
+        }
+
+        function populateFilters(){
+            // categories from multiple fields
+            const rawCats = products.map(p => p.category || p.cuisine || p.type).filter(Boolean);
+            allCategories = Array.from(new Set(rawCats)).sort();
+            categoriesEl.innerHTML = allCategories.map(cat => `
+                <label style="font-size:14px"><input type=\"checkbox\" value=\"${cat}\" /> ${cat}</label>
+            `).join('');
+
+            // time bounds
+            const times = products.map(p => getTime(p)).filter(v=>typeof v==='number');
+            const min = times.length ? Math.min(...times) : 0;
+            const max = times.length ? Math.max(...times) : 0;
+            priceBounds = {min, max};
+            priceMinEl.value = min;
+            priceMaxEl.value = max;
+        }
+
+        // fetch recipes
+        fetch(API)
+            .then(r => r.json())
+            .then(data => {
+                // dummyjson recipes endpoint returns 'recipes' array
+                products = Array.isArray(data.recipes) ? data.recipes : (Array.isArray(data) ? data : []);
+                loading.style.display = 'none';
+                populateFilters();
+                applyFilters();
+                console.log('Loaded recipes:', products.length);
+            })
+            .catch(err => {
+                loading.textContent = 'Failed to fetch recipes';
+                console.error(err);
+            });
+
+        // events
+        let searchTimeout;
+        [searchEl, searchEl2].forEach(el => el.addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(applyFilters, 250); }));
+        sortEl.addEventListener('change', () => applyFilters());
+        applyBtn.addEventListener('click', applyFilters);
+        resetBtn.addEventListener('click', () => {
+            // clear filters
+            categoriesEl.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            priceMinEl.value = priceBounds.min;
+            priceMaxEl.value = priceBounds.max;
+            ratingEl.value = 0;
+            searchEl.value = '';
+            searchEl2.value = '';
+            sortEl.value = 'default';
+            applyFilters();
+        });
+
+        // delegate category change to re-run filter
+        categoriesEl.addEventListener('change', applyFilters);
+        [priceMinEl, priceMaxEl, ratingEl].forEach(e => e.addEventListener('change', applyFilters));
+
+        // favorites + cart persistence
+        function loadFavorites(){
+            try{ return JSON.parse(localStorage.getItem('favorites')||'[]') }catch(e){return []}
+        }
+        function saveFavorites(arr){ localStorage.setItem('favorites', JSON.stringify(arr)) }
+        function loadCart(){ try{return JSON.parse(localStorage.getItem('cart')||'[]')}catch(e){return []} }
+        function saveCart(c){ localStorage.setItem('cart', JSON.stringify(c)) }
+
+        let favorites = loadFavorites();
+        let cart = loadCart();
+
+        function isFavorite(id){ return favorites.indexOf(id) !== -1 }
+        function toggleFavorite(id){
+            id = Number(id);
+            if(isFavorite(id)) favorites = favorites.filter(x=>x!==id);
+            else favorites.push(id);
+            saveFavorites(favorites);
+            updateFavUI();
+            applyFilters(); // if user is viewing favorites
+        }
+
+        function updateFavUI(){
+            const favCount = document.getElementById('favCount');
+            if(favorites.length){ favCount.style.display='inline-block'; favCount.textContent = favorites.length } else favCount.style.display='none';
+            // mark buttons
+            document.querySelectorAll('.fav-btn').forEach(b=>{
+                const id = Number(b.dataset.id);
+                b.style.color = isFavorite(id) ? '#ef4444' : '#666';
+            })
+        }
+
+        // cart functions
+        function addToCart(id){
+            id = Number(id);
+            const existing = cart.find(x=>x.id===id);
+            if(existing){ existing.qty += 1 }
+            else cart.push({id, qty:1});
+            saveCart(cart);
+            updateCartUI();
+        }
+
+        function changeQty(id, delta){
+            id = Number(id);
+            const it = cart.find(x=>x.id===id);
+            if(!it) return;
+            it.qty += delta;
+            if(it.qty <= 0) cart = cart.filter(x=>x.id!==id);
+            saveCart(cart);
+            updateCartUI();
+        }
+
+        function removeFromCart(id){ cart = cart.filter(x=>x.id!==Number(id)); saveCart(cart); updateCartUI(); }
+
+        function updateCartUI(){
+            const cartCount = document.getElementById('cartCount');
+            const cartList = document.getElementById('cartList');
+            const cartFooter = document.getElementById('cartFooter');
+            const cartItemsCount = document.getElementById('cartItemsCount');
+
+            if(cart.length){ cartCount.style.display='inline-block'; cartCount.textContent = cart.reduce((s,i)=>s+i.qty,0); } else cartCount.style.display='none';
+
+            if(!cart.length){ cartList.innerHTML = '<div style="color:var(--muted);padding:12px;text-align:center">Cart is empty</div>'; cartFooter.style.display='none'; return }
+
+            cartList.innerHTML = cart.map(ci => {
+                const p = products.find(x=>x.id===ci.id) || {};
+                const img = p.image || (p.images && p.images[0]) || 'https://via.placeholder.com/56x44?text=No';
+                const title = p.title || p.name || 'Recipe';
+                return `
+                  <div class="cart-item" data-id="${ci.id}">
+                    <img src="${img}" alt="${escapeHtml(title)}" />
+                    <div style="flex:1">
+                      <div style="font-weight:600">${escapeHtml(title)}</div>
+                      <div style="color:var(--muted);font-size:13px">${p.category||p.cuisine||''}</div>
+                    </div>
+                    <div class="qty">
+                      <button class="small-btn qty-minus" data-id="${ci.id}">-</button>
+                      <div style="min-width:26px;text-align:center">${ci.qty}</div>
+                      <button class="small-btn qty-plus" data-id="${ci.id}">+</button>
+                    </div>
+                    <div style="width:30px;text-align:center"><button class="small-btn remove-item" data-id="${ci.id}">✕</button></div>
+                  </div>
+                `
+            }).join('');
+
+            cartFooter.style.display='flex';
+            cartItemsCount.textContent = cart.reduce((s,i)=>s+i.qty,0);
+
+            // attach cart listeners
+            cartList.querySelectorAll('.qty-plus').forEach(b=>b.addEventListener('click', e=>changeQty(b.dataset.id,1)));
+            cartList.querySelectorAll('.qty-minus').forEach(b=>b.addEventListener('click', e=>changeQty(b.dataset.id,-1)));
+            cartList.querySelectorAll('.remove-item').forEach(b=>b.addEventListener('click', e=>removeFromCart(b.dataset.id)));
+        }
+
+        function wireCardButtons(){
+            // use .onclick to avoid duplicate listeners on re-render
+            document.querySelectorAll('.add-cart').forEach(b => { b.onclick = () => addToCart(b.dataset.id); });
+            document.querySelectorAll('.fav-btn').forEach(b => { b.onclick = () => toggleFavorite(b.dataset.id); });
+            updateFavUI();
+            updateCartUI();
+        }
+
+        // topbar buttons
+        const favToggle = document.getElementById('favToggle');
+        const cartToggle = document.getElementById('cartToggle');
+        const cartPanel = document.getElementById('cartPanel');
+        const closeCart = document.getElementById('closeCart');
+        const clearCart = document.getElementById('clearCart');
+
+        let showOnlyFavs = false;
+        favToggle.addEventListener('click', ()=>{
+            showOnlyFavs = !showOnlyFavs;
+            favToggle.style.opacity = showOnlyFavs ? '0.7' : '1';
+            applyFilters();
+        });
+
+
+        cartToggle.addEventListener('click', ()=>{ cartPanel.classList.toggle('open'); cartPanel.setAttribute('aria-hidden', cartPanel.classList.contains('open')? 'false':'true'); updateCartUI(); });
+        closeCart.addEventListener('click', ()=>{ cartPanel.classList.remove('open'); cartPanel.setAttribute('aria-hidden','true') });
+        clearCart.addEventListener('click', ()=>{ cart = []; saveCart(cart); updateCartUI(); });
+
+        // initial UI update
+        updateFavUI(); updateCartUI();
+    </script>
+</body>
+</html>

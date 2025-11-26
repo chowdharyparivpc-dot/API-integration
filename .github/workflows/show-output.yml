@@ -1,0 +1,27 @@
+name: Show Repository Output
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  show-output:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: List repository files
+        run: |
+          echo "--- Files in repository (root) ---"
+          ls -la
+          echo "\n--- Top-level index.html (first 200 lines) ---"
+          if [ -f index.html ]; then sed -n '1,200p' index.html; else echo "index.html not found"; fi
+
+      - name: Show `output` folder (if present)
+        run: |
+          echo "\n--- output folder listing ---"
+          if [ -d output ]; then ls -la output; echo "\n--- sample files in output ---"; ls -la output | sed -n '1,200p'; else echo "No output folder found"; fi
+
+      - name: Done
+        run: echo "Workflow completed"

@@ -1032,7 +1032,7 @@
 
             cartList.innerHTML = cart.map(ci => {
                 const p = products.find(x=>x.id===ci.id) || {};
-                const img = p.image || (p.images && p.images[0]) || 'https://via.placeholder.com/56x44?text=No';
+                const img = getRecipeImage(p);
                 const title = p.title || p.name || 'Recipe';
                 return `
                   <div class="cart-item" data-id="${ci.id}">

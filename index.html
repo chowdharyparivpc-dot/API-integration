@@ -121,10 +121,14 @@
                     <div id="cartList">
                         <div style="color:var(--muted);padding:12px;text-align:center">Cart is empty</div>
                     </div>
-                    <div id="cartFooter" style="padding-top:8px;display:none;justify-content:space-between;align-items:center">
-                        <div style="color:var(--muted)"><span id="cartItemsCount">0</span> items</div>
-                        <div><button id="clearCart" class="small-btn">Clear</button></div>
+                    <div id="orderActions" style="padding-top:8px;display:none;flex-direction:column;gap:10px">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <div style="color:var(--muted)"><span id="cartItemsCount">0</span> items</div>
+                            <div><button id="clearCart" class="small-btn">Clear</button></div>
+                        </div>
+                        <button id="placeOrder" class="btn" style="width:100%">Place order</button>
                     </div>
+                    <div id="orderMessage" style="margin-top:12px;color:#065f46;font-size:14px;display:none"></div>
                 </div>
             </main>
         </div>
@@ -348,12 +352,17 @@
         function updateCartUI(){
             const cartCount = document.getElementById('cartCount');
             const cartList = document.getElementById('cartList');
-            const cartFooter = document.getElementById('cartFooter');
+            const orderActions = document.getElementById('orderActions');
             const cartItemsCount = document.getElementById('cartItemsCount');
 
             if(cart.length){ cartCount.style.display='inline-block'; cartCount.textContent = cart.reduce((s,i)=>s+i.qty,0); } else cartCount.style.display='none';
 
-            if(!cart.length){ cartList.innerHTML = '<div style="color:var(--muted);padding:12px;text-align:center">Cart is empty</div>'; cartFooter.style.display='none'; return }
+            if(!cart.length){
+                cartList.innerHTML = '<div style="color:var(--muted);padding:12px;text-align:center">Cart is empty</div>';
+                orderActions.style.display='none';
+                setOrderMessage('');
+                return
+            }
 
             cartList.innerHTML = cart.map(ci => {
                 const p = products.find(x=>x.id===ci.id) || {};
@@ -376,7 +385,7 @@
                 `
             }).join('');
 
-            cartFooter.style.display='flex';
+            orderActions.style.display='flex';
             cartItemsCount.textContent = cart.reduce((s,i)=>s+i.qty,0);
 
             // attach cart listeners
@@ -399,6 +408,8 @@
         const cartPanel = document.getElementById('cartPanel');
         const closeCart = document.getElementById('closeCart');
         const clearCart = document.getElementById('clearCart');
+        const placeOrder = document.getElementById('placeOrder');
+        const orderMessage = document.getElementById('orderMessage');
 
         let showOnlyFavs = false;
         favToggle.addEventListener('click', ()=>{
@@ -407,10 +418,39 @@
             applyFilters();
         });
 
+        function setOrderMessage(text, success = true){
+            orderMessage.style.display = text ? 'block' : 'none';
+            orderMessage.style.color = success ? '#065f46' : '#b91c1c';
+            orderMessage.textContent = text || '';
+        }
+
+        function placeOrderNow(){
+            if(!cart.length) return;
+            placeOrder.disabled = true;
+            placeOrder.textContent = 'Placing order…';
+            setOrderMessage('');
+
+            const orderItems = cart.map(ci => {
+                const p = products.find(x=>x.id===ci.id) || {};
+                return {id: ci.id, title: p.title || p.name || 'Recipe', quantity: ci.qty};
+            });
+            const orderNumber = Math.floor(Math.random()*900000 + 100000);
+            const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+
+            setTimeout(() => {
+                cart = [];
+                saveCart(cart);
+                updateCartUI();
+                placeOrder.disabled = false;
+                placeOrder.textContent = 'Place order';
+                setOrderMessage(`Order #${orderNumber} received! ${totalQty} item${totalQty === 1 ? '' : 's'} will be prepared shortly.`);
+            }, 700);
+        }
 
         cartToggle.addEventListener('click', ()=>{ cartPanel.classList.toggle('open'); cartPanel.setAttribute('aria-hidden', cartPanel.classList.contains('open')? 'false':'true'); updateCartUI(); });
         closeCart.addEventListener('click', ()=>{ cartPanel.classList.remove('open'); cartPanel.setAttribute('aria-hidden','true') });
-        clearCart.addEventListener('click', ()=>{ cart = []; saveCart(cart); updateCartUI(); });
+        clearCart.addEventListener('click', ()=>{ cart = []; saveCart(cart); updateCartUI(); setOrderMessage(''); });
+        placeOrder.addEventListener('click', placeOrderNow);
 
         // initial UI update
         updateFavUI(); updateCartUI();

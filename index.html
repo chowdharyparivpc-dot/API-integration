@@ -136,6 +136,657 @@
 
     <script>
         const API = 'https://dummyjson.com/recipes';
+        const sampleRecipes = [
+            {
+                id: 1001,
+                title: 'Butter Chicken',
+                category: 'Indian',
+                description: 'Creamy tomato-based curry with tender chicken and warm spices.',
+                image: 'https://via.placeholder.com/400x300?text=Butter+Chicken',
+                ingredients: ['chicken', 'tomato', 'cream', 'garam masala', 'butter'],
+                rating: 4.9,
+                servings: 4,
+                totalTime: 50
+            },
+            {
+                id: 1002,
+                title: 'Vegetable Biryani',
+                category: 'Indian',
+                description: 'Aromatic rice layered with vegetables and fragrant spices.',
+                image: 'https://via.placeholder.com/400x300?text=Vegetable+Biryani',
+                ingredients: ['rice', 'carrot', 'peas', 'onion', 'saffron'],
+                rating: 4.7,
+                servings: 4,
+                totalTime: 60
+            },
+            {
+                id: 1003,
+                title: 'Masala Dosa',
+                category: 'Indian',
+                description: 'Crispy rice crepes stuffed with spiced potato filling.',
+                image: 'https://via.placeholder.com/400x300?text=Masala+Dosa',
+                ingredients: ['rice', 'urad dal', 'potato', 'mustard seeds', 'curry leaves'],
+                rating: 4.8,
+                servings: 2,
+                totalTime: 45
+            },
+            {
+                id: 1004,
+                title: 'Sushi Platter',
+                category: 'Japanese',
+                description: 'Assorted nigiri and rolls with fresh fish and vegetables.',
+                image: 'https://via.placeholder.com/400x300?text=Sushi+Platter',
+                ingredients: ['rice', 'nori', 'salmon', 'tuna', 'avocado'],
+                rating: 4.9,
+                servings: 3,
+                totalTime: 40
+            },
+            {
+                id: 1005,
+                title: 'Ramen Bowl',
+                category: 'Japanese',
+                description: 'Savory broth with noodles, pork, egg, and spring onions.',
+                image: 'https://via.placeholder.com/400x300?text=Ramen+Bowl',
+                ingredients: ['ramen noodles', 'broth', 'pork', 'egg', 'nori'],
+                rating: 4.8,
+                servings: 2,
+                totalTime: 35
+            },
+            {
+                id: 1006,
+                title: 'Tempura Udon',
+                category: 'Japanese',
+                description: 'Thick udon noodles topped with crispy shrimp tempura.',
+                image: 'https://via.placeholder.com/400x300?text=Tempura+Udon',
+                ingredients: ['udon', 'shrimp', 'tempura batter', 'dashi', 'scallion'],
+                rating: 4.6,
+                servings: 2,
+                totalTime: 30
+            },
+            {
+                id: 1007,
+                title: 'Bibimbap',
+                category: 'Korean',
+                description: 'Rice bowl topped with vegetables, beef, egg, and spicy sauce.',
+                image: 'https://via.placeholder.com/400x300?text=Bibimbap',
+                ingredients: ['rice', 'spinach', 'beef', 'egg', 'gochujang'],
+                rating: 4.8,
+                servings: 2,
+                totalTime: 35
+            },
+            {
+                id: 1008,
+                title: 'Korean BBQ Chicken',
+                category: 'Korean',
+                description: 'Sweet and spicy grilled chicken with sesame and scallions.',
+                image: 'https://via.placeholder.com/400x300?text=Korean+BBQ+Chicken',
+                ingredients: ['chicken', 'soy sauce', 'brown sugar', 'garlic', 'sesame oil'],
+                rating: 4.7,
+                servings: 4,
+                totalTime: 45
+            },
+            {
+                id: 1009,
+                title: 'Kimchi Stew',
+                category: 'Korean',
+                description: 'Spicy kimchi soup with tofu, pork, and vegetables.',
+                image: 'https://via.placeholder.com/400x300?text=Kimchi+Stew',
+                ingredients: ['kimchi', 'tofu', 'pork', 'onion', 'gochujang'],
+                rating: 4.6,
+                servings: 4,
+                totalTime: 40
+            },
+            {
+                id: 1010,
+                title: 'General Tso Chicken',
+                category: 'Chinese',
+                description: 'Crispy chicken in a sweet and tangy sauce.',
+                image: 'https://via.placeholder.com/400x300?text=General+Tso+Chicken',
+                ingredients: ['chicken', 'soy sauce', 'rice vinegar', 'sugar', 'garlic'],
+                rating: 4.7,
+                servings: 3,
+                totalTime: 35
+            },
+            {
+                id: 1011,
+                title: 'Kung Pao Shrimp',
+                category: 'Chinese',
+                description: 'Spicy stir-fried shrimp with peanuts and vegetables.',
+                image: 'https://via.placeholder.com/400x300?text=Kung+Pao+Shrimp',
+                ingredients: ['shrimp', 'peanuts', 'bell pepper', 'soy sauce', 'chili'],
+                rating: 4.8,
+                servings: 3,
+                totalTime: 30
+            },
+            {
+                id: 1012,
+                title: 'Beef Chow Mein',
+                category: 'Chinese',
+                description: 'Stir-fried noodles with beef, cabbage, and soy sauce.',
+                image: 'https://via.placeholder.com/400x300?text=Beef+Chow+Mein',
+                ingredients: ['noodles', 'beef', 'cabbage', 'soy sauce', 'bean sprouts'],
+                rating: 4.5,
+                servings: 4,
+                totalTime: 30
+            },
+            {
+                id: 1013,
+                title: 'Tacos al Pastor',
+                category: 'Mexican',
+                description: 'Marinated pork tacos with pineapple and cilantro.',
+                image: 'https://via.placeholder.com/400x300?text=Tacos+al+Pastor',
+                ingredients: ['pork', 'pineapple', 'corn tortillas', 'cilantro', 'onion'],
+                rating: 4.8,
+                servings: 4,
+                totalTime: 45
+            },
+            {
+                id: 1014,
+                title: 'Chicken Enchiladas',
+                category: 'Mexican',
+                description: 'Cheesy enchiladas topped with red sauce and sour cream.',
+                image: 'https://via.placeholder.com/400x300?text=Chicken+Enchiladas',
+                ingredients: ['tortillas', 'chicken', 'cheese', 'enchilada sauce', 'onion'],
+                rating: 4.7,
+                servings: 4,
+                totalTime: 50
+            },
+            {
+                id: 1015,
+                title: 'Guacamole Bowl',
+                category: 'Mexican',
+                description: 'Fresh avocado dip with lime, tomato, onion, and cilantro.',
+                image: 'https://via.placeholder.com/400x300?text=Guacamole+Bowl',
+                ingredients: ['avocado', 'tomato', 'onion', 'lime', 'cilantro'],
+                rating: 4.9,
+                servings: 2,
+                totalTime: 15
+            },
+            {
+                id: 1016,
+                title: 'Margherita Pizza',
+                category: 'Italian',
+                description: 'Classic pizza with tomato, mozzarella, and basil.',
+                image: 'https://via.placeholder.com/400x300?text=Margherita+Pizza',
+                ingredients: ['pizza dough', 'tomato', 'mozzarella', 'basil', 'olive oil'],
+                rating: 4.8,
+                servings: 4,
+                totalTime: 35
+            },
+            {
+                id: 1017,
+                title: 'Pasta Carbonara',
+                category: 'Italian',
+                description: 'Creamy pasta with pancetta, egg, and pecorino cheese.',
+                image: 'https://via.placeholder.com/400x300?text=Pasta+Carbonara',
+                ingredients: ['spaghetti', 'egg', 'pancetta', 'pecorino', 'black pepper'],
+                rating: 4.9,
+                servings: 3,
+                totalTime: 25
+            },
+            {
+                id: 1018,
+                title: 'Caprese Salad',
+                category: 'Italian',
+                description: 'Fresh tomato and mozzarella salad with basil and olive oil.',
+                image: 'https://via.placeholder.com/400x300?text=Caprese+Salad',
+                ingredients: ['tomato', 'mozzarella', 'basil', 'olive oil', 'salt'],
+                rating: 4.7,
+                servings: 2,
+                totalTime: 15
+            },
+            {
+                id: 1019,
+                title: 'Pad Thai',
+                category: 'Thai',
+                description: 'Stir-fried noodles with shrimp, tofu, peanuts, and tamarind.',
+                image: 'https://via.placeholder.com/400x300?text=Pad+Thai',
+                ingredients: ['rice noodles', 'shrimp', 'tofu', 'peanuts', 'tamarind'],
+                rating: 4.8,
+                servings: 3,
+                totalTime: 30
+            },
+            {
+                id: 1020,
+                title: 'Green Curry',
+                category: 'Thai',
+                description: 'Creamy green curry with chicken, coconut milk, and vegetables.',
+                image: 'https://via.placeholder.com/400x300?text=Green+Curry',
+                ingredients: ['chicken', 'coconut milk', 'green curry paste', 'basil', 'eggplant'],
+                rating: 4.7,
+                servings: 4,
+                totalTime: 40
+            },
+            {
+                id: 1021,
+                title: 'Tom Yum Soup',
+                category: 'Thai',
+                description: 'Spicy and sour soup with shrimp, lemongrass, and lime.',
+                image: 'https://via.placeholder.com/400x300?text=Tom+Yum+Soup',
+                ingredients: ['shrimp', 'lemongrass', 'lime', 'mushrooms', 'chili'],
+                rating: 4.6,
+                servings: 3,
+                totalTime: 25
+            },
+            {
+                id: 1022,
+                title: 'Croque Monsieur',
+                category: 'French',
+                description: 'Golden toasted ham and cheese sandwich with béchamel sauce.',
+                image: 'https://via.placeholder.com/400x300?text=Croque+Monsieur',
+                ingredients: ['bread', 'ham', 'cheese', 'butter', 'béchamel'],
+                rating: 4.6,
+                servings: 2,
+                totalTime: 20
+            },
+            {
+                id: 1023,
+                title: 'Nicoise Salad',
+                category: 'French',
+                description: 'Salad with tuna, eggs, olives, and green beans.',
+                image: 'https://via.placeholder.com/400x300?text=Nicoise+Salad',
+                ingredients: ['tuna', 'eggs', 'olives', 'green beans', 'potatoes'],
+                rating: 4.7,
+                servings: 2,
+                totalTime: 25
+            },
+            {
+                id: 1024,
+                title: 'Greek Salad',
+                category: 'Mediterranean',
+                description: 'Colorful salad with cucumber, tomato, olives, and feta.',
+                image: 'https://via.placeholder.com/400x300?text=Greek+Salad',
+                ingredients: ['cucumber', 'tomato', 'olives', 'feta', 'oregano'],
+                rating: 4.7,
+                servings: 3,
+                totalTime: 15
+            },
+            {
+                id: 1025,
+                title: 'Falafel Wrap',
+                category: 'Middle Eastern',
+                description: 'Crispy chickpea falafel wrapped with hummus and salad.',
+                image: 'https://via.placeholder.com/400x300?text=Falafel+Wrap',
+                ingredients: ['chickpeas', 'tortilla', 'hummus', 'lettuce', 'tomato'],
+                rating: 4.8,
+                servings: 2,
+                totalTime: 30
+            },
+            {
+                id: 1026,
+                title: 'Poke Bowl',
+                category: 'Hawaiian',
+                description: 'Fresh marinated fish over rice with seaweed and avocado.',
+                image: 'https://via.placeholder.com/400x300?text=Poke+Bowl',
+                ingredients: ['rice', 'tuna', 'soy sauce', 'avocado', 'seaweed'],
+                rating: 4.8,
+                servings: 2,
+                totalTime: 20
+            },
+            {
+                id: 1027,
+                title: 'Ceviche',
+                category: 'Peruvian',
+                description: 'Raw fish cured in lime juice with chili and cilantro.',
+                image: 'https://via.placeholder.com/400x300?text=Ceviche',
+                ingredients: ['fish', 'lime', 'onion', 'cilantro', 'chili'],
+                rating: 4.6,
+                servings: 2,
+                totalTime: 15
+            },
+            {
+                id: 1028,
+                title: 'Shakshuka',
+                category: 'Mediterranean',
+                description: 'Poached eggs in spiced tomato sauce with peppers.',
+                image: 'https://via.placeholder.com/400x300?text=Shakshuka',
+                ingredients: ['eggs', 'tomato', 'pepper', 'onion', 'cumin'],
+                rating: 4.7,
+                servings: 2,
+                totalTime: 30
+            },
+            {
+                id: 1029,
+                title: 'Goulash',
+                category: 'Hungarian',
+                description: 'Hearty beef stew with paprika, potatoes, and carrots.',
+                image: 'https://via.placeholder.com/400x300?text=Goulash',
+                ingredients: ['beef', 'paprika', 'potato', 'carrot', 'onion'],
+                rating: 4.5,
+                servings: 4,
+                totalTime: 90
+            },
+            {
+                id: 1030,
+                title: 'Brigadeiro',
+                category: 'Brazilian',
+                description: 'Sweet chocolate truffles made with condensed milk and cocoa.',
+                image: 'https://via.placeholder.com/400x300?text=Brigadeiro',
+                ingredients: ['condensed milk', 'cocoa', 'butter', 'chocolate sprinkles'],
+                rating: 4.9,
+                servings: 8,
+                totalTime: 25
+            },
+            {
+                id: 1031,
+                title: 'Aloo Gobi',
+                category: 'Indian',
+                description: 'Spiced potatoes and cauliflower cooked with cumin and turmeric.',
+                image: 'https://via.placeholder.com/400x300?text=Aloo+Gobi',
+                ingredients: ['potato', 'cauliflower', 'cumin', 'turmeric', 'ginger'],
+                rating: 4.7,
+                servings: 3,
+                totalTime: 35
+            },
+            {
+                id: 1032,
+                title: 'Chole Bhature',
+                category: 'Indian',
+                description: 'Spicy chickpea curry served with fluffy fried bread.',
+                image: 'https://via.placeholder.com/400x300?text=Chole+Bhature',
+                ingredients: ['chickpeas', 'tomato', 'onion', 'flour', 'spices'],
+                rating: 4.8,
+                servings: 3,
+                totalTime: 45
+            },
+            {
+                id: 1033,
+                title: 'Palak Paneer',
+                category: 'Indian',
+                description: 'Creamy spinach curry with cubes of paneer cheese.',
+                image: 'https://via.placeholder.com/400x300?text=Palak+Paneer',
+                ingredients: ['spinach', 'paneer', 'garlic', 'cream', 'spices'],
+                rating: 4.8,
+                servings: 4,
+                totalTime: 40
+            },
+            {
+                id: 1034,
+                title: 'Tandoori Chicken',
+                category: 'Indian',
+                description: 'Charred chicken marinated in yogurt and warming spices.',
+                image: 'https://via.placeholder.com/400x300?text=Tandoori+Chicken',
+                ingredients: ['chicken', 'yogurt', 'garam masala', 'ginger', 'garlic'],
+                rating: 4.8,
+                servings: 4,
+                totalTime: 55
+            },
+            {
+                id: 1035,
+                title: 'Okonomiyaki',
+                category: 'Japanese',
+                description: 'Savory cabbage pancake topped with sauce and bonito flakes.',
+                image: 'https://via.placeholder.com/400x300?text=Okonomiyaki',
+                ingredients: ['cabbage', 'flour', 'egg', 'pork', 'sauce'],
+                rating: 4.7,
+                servings: 3,
+                totalTime: 35
+            },
+            {
+                id: 1036,
+                title: 'Miso Soup',
+                category: 'Japanese',
+                description: 'Comforting broth with tofu, seaweed, and savory miso paste.',
+                image: 'https://via.placeholder.com/400x300?text=Miso+Soup',
+                ingredients: ['miso', 'tofu', 'seaweed', 'green onion', 'dashi'],
+                rating: 4.6,
+                servings: 2,
+                totalTime: 15
+            },
+            {
+                id: 1037,
+                title: 'Shabu Shabu',
+                category: 'Japanese',
+                description: 'Interactive hot pot with thinly sliced beef and vegetables.',
+                image: 'https://via.placeholder.com/400x300?text=Shabu+Shabu',
+                ingredients: ['beef', 'cabbage', 'mushroom', 'dipping sauce', 'tofu'],
+                rating: 4.7,
+                servings: 4,
+                totalTime: 50
+            },
+            {
+                id: 1038,
+                title: 'Chicken Katsu',
+                category: 'Japanese',
+                description: 'Crispy breaded chicken cutlet served with tonkatsu sauce.',
+                image: 'https://via.placeholder.com/400x300?text=Chicken+Katsu',
+                ingredients: ['chicken', 'panko', 'egg', 'flour', 'sauce'],
+                rating: 4.8,
+                servings: 3,
+                totalTime: 40
+            },
+            {
+                id: 1039,
+                title: 'Japchae',
+                category: 'Korean',
+                description: 'Sweet potato glass noodles stir-fried with vegetables and beef.',
+                image: 'https://via.placeholder.com/400x300?text=Japchae',
+                ingredients: ['glass noodles', 'beef', 'spinach', 'carrot', 'soy sauce'],
+                rating: 4.8,
+                servings: 3,
+                totalTime: 35
+            },
+            {
+                id: 1040,
+                title: 'Tteokbokki',
+                category: 'Korean',
+                description: 'Chewy rice cakes in a spicy-sweet gochujang sauce.',
+                image: 'https://via.placeholder.com/400x300?text=Tteokbokki',
+                ingredients: ['rice cakes', 'gochujang', 'fish cake', 'onion', 'sugar'],
+                rating: 4.7,
+                servings: 3,
+                totalTime: 30
+            },
+            {
+                id: 1041,
+                title: 'Bulgogi',
+                category: 'Korean',
+                description: 'Marinated beef strips grilled with sesame and scallions.',
+                image: 'https://via.placeholder.com/400x300?text=Bulgogi',
+                ingredients: ['beef', 'soy sauce', 'brown sugar', 'sesame oil', 'garlic'],
+                rating: 4.9,
+                servings: 4,
+                totalTime: 40
+            },
+            {
+                id: 1042,
+                title: 'Korean Fried Chicken',
+                category: 'Korean',
+                description: 'Crunchy double-fried chicken with a sweet-spicy glaze.',
+                image: 'https://via.placeholder.com/400x300?text=Korean+Fried+Chicken',
+                ingredients: ['chicken', 'cornstarch', 'garlic', 'gochujang', 'honey'],
+                rating: 4.8,
+                servings: 4,
+                totalTime: 45
+            },
+            {
+                id: 1043,
+                title: 'Sweet and Sour Pork',
+                category: 'Chinese',
+                description: 'Tender pork pieces tossed in a tangy pineapple sauce.',
+                image: 'https://via.placeholder.com/400x300?text=Sweet+and+Sour+Pork',
+                ingredients: ['pork', 'pineapple', 'bell pepper', 'vinegar', 'sugar'],
+                rating: 4.6,
+                servings: 3,
+                totalTime: 35
+            },
+            {
+                id: 1044,
+                title: 'Mapo Tofu',
+                category: 'Chinese',
+                description: 'Silken tofu in a spicy Sichuan sauce with minced pork.',
+                image: 'https://via.placeholder.com/400x300?text=Mapo+Tofu',
+                ingredients: ['tofu', 'pork', 'doubanjiang', 'ginger', 'garlic'],
+                rating: 4.7,
+                servings: 3,
+                totalTime: 25
+            },
+            {
+                id: 1045,
+                title: 'Egg Fried Rice',
+                category: 'Chinese',
+                description: 'Simple and flavorful rice stir-fry with egg and scallions.',
+                image: 'https://via.placeholder.com/400x300?text=Egg+Fried+Rice',
+                ingredients: ['rice', 'egg', 'scallion', 'soy sauce', 'oil'],
+                rating: 4.5,
+                servings: 4,
+                totalTime: 20
+            },
+            {
+                id: 1046,
+                title: 'Chilaquiles',
+                category: 'Mexican',
+                description: 'Crispy tortilla chips simmered in salsa and topped with cheese.',
+                image: 'https://via.placeholder.com/400x300?text=Chilaquiles',
+                ingredients: ['tortilla chips', 'salsa', 'cheese', 'cream', 'onion'],
+                rating: 4.7,
+                servings: 3,
+                totalTime: 25
+            },
+            {
+                id: 1047,
+                title: 'Quesadilla',
+                category: 'Mexican',
+                description: 'Grilled tortilla filled with cheese, chicken, and peppers.',
+                image: 'https://via.placeholder.com/400x300?text=Quesadilla',
+                ingredients: ['tortilla', 'cheese', 'chicken', 'pepper', 'onion'],
+                rating: 4.8,
+                servings: 2,
+                totalTime: 20
+            },
+            {
+                id: 1048,
+                title: 'Pozole',
+                category: 'Mexican',
+                description: 'Rich hominy soup with pork, cabbage, and lime.',
+                image: 'https://via.placeholder.com/400x300?text=Pozole',
+                ingredients: ['pork', 'hominy', 'cabbage', 'lime', 'radish'],
+                rating: 4.8,
+                servings: 5,
+                totalTime: 90
+            },
+            {
+                id: 1049,
+                title: 'Lasagna',
+                category: 'Italian',
+                description: 'Layered pasta with meat sauce, ricotta, and melted mozzarella.',
+                image: 'https://via.placeholder.com/400x300?text=Lasagna',
+                ingredients: ['lasagna noodles', 'meat sauce', 'ricotta', 'mozzarella', 'parmesan'],
+                rating: 4.9,
+                servings: 6,
+                totalTime: 70
+            },
+            {
+                id: 1050,
+                title: 'Tiramisu',
+                category: 'Italian',
+                description: 'Coffee-soaked ladyfingers layered with mascarpone cream.',
+                image: 'https://via.placeholder.com/400x300?text=Tiramisu',
+                ingredients: ['ladyfingers', 'espresso', 'mascarpone', 'cocoa', 'sugar'],
+                rating: 4.9,
+                servings: 6,
+                totalTime: 30
+            },
+            {
+                id: 1051,
+                title: 'Bruschetta',
+                category: 'Italian',
+                description: 'Toasted bread slices topped with tomato, basil, and olive oil.',
+                image: 'https://via.placeholder.com/400x300?text=Bruschetta',
+                ingredients: ['bread', 'tomato', 'basil', 'olive oil', 'garlic'],
+                rating: 4.7,
+                servings: 4,
+                totalTime: 15
+            },
+            {
+                id: 1052,
+                title: 'Massaman Curry',
+                category: 'Thai',
+                description: 'Rich coconut curry with beef, potatoes, and peanuts.',
+                image: 'https://via.placeholder.com/400x300?text=Massaman+Curry',
+                ingredients: ['beef', 'coconut milk', 'potatoes', 'peanuts', 'curry paste'],
+                rating: 4.8,
+                servings: 4,
+                totalTime: 50
+            },
+            {
+                id: 1053,
+                title: 'Som Tam',
+                category: 'Thai',
+                description: 'Spicy green papaya salad with lime, chili, and peanuts.',
+                image: 'https://via.placeholder.com/400x300?text=Som+Tam',
+                ingredients: ['green papaya', 'lime', 'chili', 'peanuts', 'fish sauce'],
+                rating: 4.7,
+                servings: 2,
+                totalTime: 20
+            },
+            {
+                id: 1054,
+                title: 'Ratatouille',
+                category: 'French',
+                description: 'Slow-cooked vegetables with tomato, zucchini, and eggplant.',
+                image: 'https://via.placeholder.com/400x300?text=Ratatouille',
+                ingredients: ['eggplant', 'zucchini', 'tomato', 'bell pepper', 'garlic'],
+                rating: 4.7,
+                servings: 4,
+                totalTime: 60
+            },
+            {
+                id: 1055,
+                title: 'Hummus Platter',
+                category: 'Mediterranean',
+                description: 'Creamy chickpea dip served with pita, olives, and veggies.',
+                image: 'https://via.placeholder.com/400x300?text=Hummus+Platter',
+                ingredients: ['chickpeas', 'tahini', 'lemon', 'garlic', 'olive oil'],
+                rating: 4.8,
+                servings: 4,
+                totalTime: 15
+            },
+            {
+                id: 1056,
+                title: 'Lamb Kofta',
+                category: 'Middle Eastern',
+                description: 'Grilled spiced lamb skewers served with yogurt sauce.',
+                image: 'https://via.placeholder.com/400x300?text=Lamb+Kofta',
+                ingredients: ['lamb', 'cumin', 'coriander', 'onion', 'yogurt'],
+                rating: 4.8,
+                servings: 4,
+                totalTime: 40
+            },
+            {
+                id: 1057,
+                title: 'Feijoada',
+                category: 'Brazilian',
+                description: 'Hearty black bean stew with pork and sausage.',
+                image: 'https://via.placeholder.com/400x300?text=Feijoada',
+                ingredients: ['black beans', 'pork', 'sausage', 'onion', 'garlic'],
+                rating: 4.8,
+                servings: 6,
+                totalTime: 120
+            },
+            {
+                id: 1058,
+                title: 'Paella',
+                category: 'Spanish',
+                description: 'Saffron rice with seafood, chicken, and chorizo.',
+                image: 'https://via.placeholder.com/400x300?text=Paella',
+                ingredients: ['rice', 'saffron', 'shrimp', 'chicken', 'chorizo'],
+                rating: 4.9,
+                servings: 6,
+                totalTime: 60
+            },
+            {
+                id: 1059,
+                title: 'Gazpacho',
+                category: 'Spanish',
+                description: 'Chilled tomato soup with cucumber, pepper, and olive oil.',
+                image: 'https://via.placeholder.com/400x300?text=Gazpacho',
+                ingredients: ['tomato', 'cucumber', 'bell pepper', 'olive oil', 'garlic'],
+                rating: 4.6,
+                servings: 4,
+                totalTime: 20
+            }
+        ];
         const grid = document.getElementById('grid');
         const loading = document.getElementById('loading');
         const stats = document.getElementById('stats');
@@ -174,7 +825,7 @@
             }
             grid.innerHTML = items.map(p => {
                 const title = p.title || p.name || 'Untitled recipe';
-                const img = p.image || (p.images && p.images[0]) || 'https://via.placeholder.com/400x300?text=No+Image';
+                const img = getRecipeImage(p);
                 const cat = p.category || p.cuisine || p.type || '';
                 const time = getTime(p);
                 const servings = p.servings || p.yield || p.servingsCount || '';
@@ -201,6 +852,17 @@
 
         function escapeHtml(s){
             return String(s).replace(/[&<>\"]+/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+        }
+
+        function getRecipeImage(p){
+            const cat = (p.category || p.cuisine || p.type || '').toString().toLowerCase();
+            const imageUrl = p.image || (p.images && p.images[0]);
+            const isPlaceholder = imageUrl && imageUrl.includes('placeholder.com');
+            if(imageUrl && !isPlaceholder){
+                return imageUrl;
+            }
+            const query = cat ? cat.replace(/\s+/g, '-') : 'food';
+            return `https://source.unsplash.com/featured/400x300/?${encodeURIComponent(query)}`;
         }
 
         function applyFilters(){
@@ -263,16 +925,19 @@
         fetch(API)
             .then(r => r.json())
             .then(data => {
-                // dummyjson recipes endpoint returns 'recipes' array
-                products = Array.isArray(data.recipes) ? data.recipes : (Array.isArray(data) ? data : []);
+                const remoteRecipes = Array.isArray(data.recipes) ? data.recipes : (Array.isArray(data) ? data : []);
+                products = [...remoteRecipes, ...sampleRecipes];
                 loading.style.display = 'none';
                 populateFilters();
                 applyFilters();
                 console.log('Loaded recipes:', products.length);
             })
             .catch(err => {
-                loading.textContent = 'Failed to fetch recipes';
-                console.error(err);
+                console.warn('Remote API unavailable, using local sample recipes.', err);
+                products = [...sampleRecipes];
+                loading.style.display = 'none';
+                populateFilters();
+                applyFilters();
             });
 
         // events

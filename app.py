@@ -6,8 +6,8 @@ import os
 import secrets
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = secrets.token_hex(16)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(16))
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///app.db')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 
 db = SQLAlchemy(app)
@@ -59,6 +59,9 @@ class Order(db.Model):
             'status': self.status,
             'created_at': self.created_at.isoformat()
         }
+
+with app.app_context():
+    db.create_all()
 
 # Routes
 @app.route('/')
@@ -258,6 +261,5 @@ def server_error(e):
     return jsonify({'error': 'Server error'}), 500
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)

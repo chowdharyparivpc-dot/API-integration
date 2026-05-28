@@ -3,12 +3,52 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Food delivery App</title>
+    <title>Elite Eats - Food Delivery</title>
     <style>
-        :root{--bg:#f5f7fb;--card:#fff;--muted:#6b7280;--accent:#2563eb}
+        :root{--bg:#f5f7fb;--card:#fff;--muted:#6b7280;--accent:#2563eb;--error:#ef4444}
         *{box-sizing:border-box}
         body{font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);margin:0;color:#111}
-        .app{max-width:1200px;margin:24px auto;padding:16px}
+        
+        /* Auth Modal */
+        .auth-overlay{display:none}
+        .auth-overlay.show{opacity:1;pointer-events:auto}
+        .auth-modal{background:var(--card);padding:32px;border-radius:12px;max-width:400px;width:90%;box-shadow:0 18px 40px rgba(2,6,23,0.2);max-height:90vh;overflow-y:auto}
+        
+        .auth-header{text-align:center;margin-bottom:32px}
+        .auth-header h1{margin:0;font-size:28px;color:var(--accent)}
+        .auth-header p{margin:8px 0 0 0;color:var(--muted);font-size:14px}
+        
+        .auth-tabs{display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid #e5e7eb}
+        .auth-tab-btn{flex:1;padding:12px;background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-size:14px;font-weight:600;color:var(--muted);transition:all 0.2s}
+        .auth-tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+        
+        .auth-tab{display:none}
+        .auth-tab.active{display:block}
+        
+        .form-group{margin-bottom:16px}
+        .form-group label{display:block;margin-bottom:6px;font-size:14px;font-weight:500}
+        .form-group input{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;font-family:inherit}
+        .form-group input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
+        
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .form-row .form-group{margin-bottom:0}
+        
+        .btn-auth{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;margin-top:12px}
+        .btn-auth:hover{background:#1d4ed8}
+        .btn-auth:disabled{background:#cbd5e1;cursor:not-allowed}
+        
+        .auth-message{margin-bottom:16px;padding:12px;border-radius:8px;font-size:14px;display:none}
+        .auth-message.error{background:#fee2e2;color:#991b1b;display:block}
+        .auth-message.success{background:#dcfce7;color:#166534;display:block}
+        
+        .auth-loading{display:none;text-align:center}
+        .spinner{display:inline-block;width:16px;height:16px;border:2px solid #cbd5e1;border-top-color:var(--accent);border-radius:50%;animation:spin 0.6s linear infinite;margin-right:8px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        
+        /* Main App */
+        .app{max-width:1200px;margin:24px auto;padding:16px;display:block}
+        .app.show{display:block}
+        
         .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
         .title{display:flex;align-items:baseline;gap:12px}
         .title h1{margin:0;font-size:20px}
@@ -18,14 +58,23 @@
         .search{padding:8px 12px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;min-width:220px}
         .select{padding:8px;border-radius:8px;border:1px solid #e5e7eb;background:#fff}
         .stats{font-size:13px;color:var(--muted)}
-
+        
+        .user-menu{position:relative;display:flex;gap:8px;align-items:center}
+        .user-btn{padding:8px 12px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:8px;cursor:pointer;font-size:14px}
+        .user-btn:hover{background:#e5e7eb}
+        .dropdown{position:absolute;top:100%;right:0;background:var(--card);border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 6px 18px rgba(16,24,40,0.1);min-width:180px;margin-top:8px;display:none}
+        .dropdown.active{display:block}
+        .dropdown-item{padding:12px 16px;cursor:pointer;border:none;background:none;width:100%;text-align:left;font-size:14px}
+        .dropdown-item:hover{background:#f3f4f6}
+        .dropdown-divider{height:1px;background:#e5e7eb;margin:4px 0}
+        
         .layout{display:grid;grid-template-columns:260px 1fr;gap:20px}
         .sidebar{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(16,24,40,0.04)}
         .filters h4{margin:8px 0}
         .category-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow:auto;padding-right:6px}
         .range-row{display:flex;gap:8px;align-items:center}
         .btn{background:var(--accent);color:#fff;padding:8px 10px;border-radius:8px;border:none;cursor:pointer}
-
+        
         .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
         .card{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:0 6px 18px rgba(16,24,40,0.06);display:flex;flex-direction:column}
         .card img{width:100%;height:200px;object-fit:cover;background:#f3f4f6}
@@ -34,23 +83,96 @@
         .card-sub{color:var(--muted);font-size:13px}
         .price-row{display:flex;align-items:center;justify-content:space-between;margin-top:auto}
         .price{font-weight:700;color:var(--accent)}
-        .badge{background:#eef2ff;color:#1e3a8a;padding:6px 8px;border-radius:999px;font-size:12px}
-
+        
         .loading{display:flex;align-items:center;justify-content:center;padding:48px;color:var(--muted)}
-
-        /* cart panel */
-        .cart-panel{position:fixed;right:18px;top:18px;width:360px;max-width:92vw;height:80vh;background:var(--card);box-shadow:0 18px 40px rgba(2,6,23,0.2);border-radius:12px;overflow:auto;transform:translateY(-20px);transition:opacity .18s,transform .18s;opacity:0;pointer-events:none;padding:12px}
+        
+        .cart-panel{position:fixed;right:18px;top:18px;width:360px;max-width:92vw;height:80vh;background:var(--card);box-shadow:0 18px 40px rgba(2,6,23,0.2);border-radius:12px;overflow:auto;transform:translateY(-20px);transition:opacity 0.18s,transform 0.18s;opacity:0;pointer-events:none;padding:12px}
         .cart-panel.open{opacity:1;transform:translateY(0);pointer-events:auto}
         .cart-item{display:flex;gap:8px;align-items:center;padding:8px 4px;border-bottom:1px solid #f3f4f6}
         .cart-item img{width:56px;height:44px;object-fit:cover;border-radius:6px}
         .qty{display:inline-flex;align-items:center;gap:6px}
         .small-btn{padding:6px 8px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer}
-
+        
+        .checkout-btn{width:100%;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;margin-top:8px}
+        .checkout-btn:hover{background:#1d4ed8}
+        
         @media (max-width:900px){.layout{grid-template-columns:1fr}.sidebar{order:2}}
-        @media (max-width:520px){.topbar{flex-direction:column;align-items:flex-start}.search{width:100%}}
+        @media (max-width:520px){.topbar{flex-direction:column;align-items:flex-start}.search{width:100%}.auth-modal{padding:20px}}
     </style>
 </head>
 <body>
+    <!-- Auth Modal -->
+    <div id="authOverlay" class="auth-overlay show">
+        <div class="auth-modal">
+            <div class="auth-header">
+                <h1>Elite Eats</h1>
+                <p>Food delivery at its finest</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab-btn active" data-tab="login">Login</button>
+                <button class="auth-tab-btn" data-tab="register">Sign Up</button>
+            </div>
+
+            <!-- Login Tab -->
+            <div id="login" class="auth-tab active">
+                <div id="loginMsg" class="auth-message"></div>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="loginEmail" required placeholder="you@example.com" />
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" required placeholder="••••••••" />
+                    </div>
+                    <button type="submit" class="btn-auth">
+                        <span class="auth-loading"><span class="spinner"></span></span>
+                        <span class="auth-text">Login</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Register Tab -->
+            <div id="register" class="auth-tab">
+                <div id="registerMsg" class="auth-message"></div>
+                <form id="registerForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>First Name</label>
+                            <input type="text" id="regFirstName" placeholder="John" />
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <input type="text" id="regLastName" placeholder="Doe" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="regEmail" required placeholder="you@example.com" />
+                    </div>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="regUsername" required placeholder="john_doe" />
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="regPassword" required placeholder="••••••••" />
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <input type="password" id="regPasswordConfirm" required placeholder="••••••••" />
+                    </div>
+                    <button type="submit" class="btn-auth">
+                        <span class="auth-loading"><span class="spinner"></span></span>
+                        <span class="auth-text">Sign Up</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
     <div class="app">
         <div class="topbar">
             <div class="title">
@@ -67,6 +189,15 @@
                 </select>
                 <button id="favToggle" class="icon-btn" title="Show favorites">❤ <span id="favCount" class="icon-badge" style="display:none">0</span></button>
                 <button id="cartToggle" class="icon-btn" title="Open cart">🛒 <span id="cartCount" class="icon-badge" style="display:none">0</span></button>
+                
+                <div class="user-menu">
+                    <button class="user-btn" id="userMenuBtn">👤 <span id="username">User</span></button>
+                    <div class="dropdown" id="userDropdown">
+                        <button class="dropdown-item" onclick="alert('Profile feature - under development')">📋 My Profile</button>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item" onclick="logout()">🚪 Logout</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -104,15 +235,13 @@
 
             <main>
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px">
-                    <div style="display:flex;gap:12px;align-items:center">
-                        <!-- controls are in the topbar -->
-                    </div>
                     <div class="stats" id="statsTop">Loading…</div>
                 </div>
 
                 <div id="grid" class="grid"></div>
                 <div id="loading" class="loading">Fetching recipes…</div>
-                <!-- cart panel -->
+                
+                <!-- Cart Panel -->
                 <div id="cartPanel" class="cart-panel" aria-hidden="true">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
                         <strong>Your Cart</strong>
@@ -121,15 +250,171 @@
                     <div id="cartList">
                         <div style="color:var(--muted);padding:12px;text-align:center">Cart is empty</div>
                     </div>
-                    <div id="cartFooter" style="padding-top:8px;display:none;justify-content:space-between;align-items:center">
-                        <div style="color:var(--muted)"><span id="cartItemsCount">0</span> items</div>
-                        <div><button id="clearCart" class="small-btn">Clear</button></div>
+                    <div id="cartFooter" style="padding-top:8px;display:none;flex-direction:column;border-top:1px solid #e5e7eb">
+                        <div style="color:var(--muted);text-align:center"><span id="cartItemsCount">0</span> items in cart</div>
+                        <button id="checkoutBtn" class="checkout-btn">Proceed to Checkout</button>
+                        <button id="clearCart" class="small-btn" style="width:100%;margin-top:8px">Clear Cart</button>
                     </div>
                 </div>
             </main>
         </div>
     </div>
+
     <script>
+        // Auth Management
+        function switchAuthTab(tabName) {
+            document.querySelectorAll('.auth-tab').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.auth-tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        }
+
+        document.querySelectorAll('.auth-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => switchAuthTab(btn.dataset.tab));
+        });
+
+        // Check auth status on load
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/auth/status');
+                const data = await response.json();
+                console.log('Auth status:', data);
+                
+                if (data.authenticated) {
+                    console.log('User authenticated, showing app');
+                    document.getElementById('authOverlay').classList.remove('show');
+                    document.querySelector('.app').classList.add('show');
+                    document.getElementById('username').textContent = data.user.username || data.user.email;
+                    loadRecipes();
+                } else {
+                    console.log('User not authenticated, showing login');
+                    document.getElementById('authOverlay').classList.add('show');
+                    document.querySelector('.app').classList.remove('show');
+                }
+            } catch (err) {
+                console.error('Auth check failed:', err);
+                // Show login page on error
+                document.getElementById('authOverlay').classList.add('show');
+                document.querySelector('.app').classList.remove('show');
+            }
+        }
+
+        // Login Handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('.btn-auth');
+            const loading = btn.querySelector('.auth-loading');
+            const text = btn.querySelector('.auth-text');
+            const msgEl = document.getElementById('loginMsg');
+
+            btn.disabled = true;
+            loading.style.display = 'inline';
+            text.style.display = 'none';
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: document.getElementById('loginEmail').value,
+                        password: document.getElementById('loginPassword').value
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    msgEl.textContent = 'Login successful!';
+                    msgEl.className = 'auth-message success';
+                    setTimeout(() => {
+                        document.getElementById('authOverlay').classList.remove('show');
+                        document.querySelector('.app').classList.add('show');
+                        document.getElementById('username').textContent = data.user.username || data.user.email;
+                        loadRecipes();
+                    }, 500);
+                } else {
+                    msgEl.textContent = data.message || 'Login failed';
+                    msgEl.className = 'auth-message error';
+                }
+            } catch (err) {
+                msgEl.textContent = 'An error occurred';
+                msgEl.className = 'auth-message error';
+            } finally {
+                btn.disabled = false;
+                loading.style.display = 'none';
+                text.style.display = 'inline';
+            }
+        });
+
+        // Register Handler
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('.btn-auth');
+            const loading = btn.querySelector('.auth-loading');
+            const text = btn.querySelector('.auth-text');
+            const msgEl = document.getElementById('registerMsg');
+
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regPasswordConfirm').value;
+
+            if (password !== confirmPassword) {
+                msgEl.textContent = 'Passwords do not match';
+                msgEl.className = 'auth-message error';
+                return;
+            }
+
+            if (password.length < 6) {
+                msgEl.textContent = 'Password must be at least 6 characters';
+                msgEl.className = 'auth-message error';
+                return;
+            }
+
+            btn.disabled = true;
+            loading.style.display = 'inline';
+            text.style.display = 'none';
+
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: document.getElementById('regEmail').value,
+                        username: document.getElementById('regUsername').value,
+                        first_name: document.getElementById('regFirstName').value,
+                        last_name: document.getElementById('regLastName').value,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    msgEl.textContent = 'Account created!';
+                    msgEl.className = 'auth-message success';
+                    setTimeout(() => {
+                        document.getElementById('authOverlay').classList.remove('show');
+                        document.querySelector('.app').classList.add('show');
+                        document.getElementById('username').textContent = data.user.username || data.user.email;
+                        loadRecipes();
+                    }, 500);
+                } else {
+                    msgEl.textContent = data.message || 'Registration failed';
+                    msgEl.className = 'auth-message error';
+                }
+            } catch (err) {
+                msgEl.textContent = 'An error occurred';
+                msgEl.className = 'auth-message error';
+            } finally {
+                btn.disabled = false;
+                loading.style.display = 'none';
+                text.style.display = 'inline';
+            }
+        });
+
+        // Logout
+        function logout() {
+            window.location.href = '/logout';
+        }
+
+        // Shopping App Code
         const API = 'https://dummyjson.com/recipes';
         const grid = document.getElementById('grid');
         const loading = document.getElementById('loading');
@@ -144,14 +429,26 @@
         const ratingEl = document.getElementById('rating');
         const applyBtn = document.getElementById('applyBtn');
         const resetBtn = document.getElementById('resetBtn');
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const userDropdown = document.getElementById('userDropdown');
 
-        let products = []; // we'll keep the variable name for brevity
+        let products = [];
         let filtered = [];
         let allCategories = [];
         let priceBounds = {min:0,max:0};
 
+        // User menu toggle
+        userMenuBtn.addEventListener('click', () => {
+            userDropdown.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.user-menu')) {
+                userDropdown.classList.remove('active');
+            }
+        });
+
         function getTime(p){
-            // possible time fields in recipe objects
             const keys = ['time','totalTime','cookTime','prepTime','duration','readyInMinutes'];
             for(const k of keys){
                 if(p[k] != null){
@@ -175,7 +472,7 @@
                 const servings = p.servings || p.yield || p.servingsCount || '';
                 const ingredientsCount = Array.isArray(p.ingredients) ? p.ingredients.length : (p.ingredients ? 1 : 0);
 
-                    return `
+                return `
                     <article class="card" data-id="${p.id}">
                         <img src="${img}" alt="${escapeHtml(title)}" />
                         <div class="card-body">
@@ -195,7 +492,7 @@
         }
 
         function escapeHtml(s){
-            return String(s).replace(/[&<>\"]+/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+            return String(s).replace(/[&<>"]+/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
         }
 
         function applyFilters(){
@@ -228,24 +525,20 @@
             if(sort === 'time-desc') out.sort((a,b) => getTime(b) - getTime(a));
 
             filtered = out;
-            // if favorites-only mode is on, filter to favorites
             if(showOnlyFavs){ out = out.filter(p => isFavorite(p.id)); }
             stats.textContent = `${out.length} recipes`;
             statsTop.textContent = `${out.length} results`;
             render(out);
-            // after render, wire up card buttons (fav & cart)
             wireCardButtons();
         }
 
         function populateFilters(){
-            // categories from multiple fields
             const rawCats = products.map(p => p.category || p.cuisine || p.type).filter(Boolean);
             allCategories = Array.from(new Set(rawCats)).sort();
             categoriesEl.innerHTML = allCategories.map(cat => `
-                <label style="font-size:14px"><input type=\"checkbox\" value=\"${cat}\" /> ${cat}</label>
+                <label style="font-size:14px"><input type="checkbox" value="${cat}" /> ${cat}</label>
             `).join('');
 
-            // time bounds
             const times = products.map(p => getTime(p)).filter(v=>typeof v==='number');
             const min = times.length ? Math.min(...times) : 0;
             const max = times.length ? Math.max(...times) : 0;
@@ -254,29 +547,26 @@
             priceMaxEl.value = max;
         }
 
-        // fetch recipes
-        fetch(API)
-            .then(r => r.json())
-            .then(data => {
-                // dummyjson recipes endpoint returns 'recipes' array
-                products = Array.isArray(data.recipes) ? data.recipes : (Array.isArray(data) ? data : []);
-                loading.style.display = 'none';
-                populateFilters();
-                applyFilters();
-                console.log('Loaded recipes:', products.length);
-            })
-            .catch(err => {
-                loading.textContent = 'Failed to fetch recipes';
-                console.error(err);
-            });
+        function loadRecipes() {
+            fetch(API)
+                .then(r => r.json())
+                .then(data => {
+                    products = Array.isArray(data.recipes) ? data.recipes : (Array.isArray(data) ? data : []);
+                    loading.style.display = 'none';
+                    populateFilters();
+                    applyFilters();
+                })
+                .catch(err => {
+                    loading.textContent = 'Failed to fetch recipes';
+                    console.error(err);
+                });
+        }
 
-        // events
         let searchTimeout;
         [searchEl, searchEl2].forEach(el => el.addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(applyFilters, 250); }));
         sortEl.addEventListener('change', () => applyFilters());
         applyBtn.addEventListener('click', applyFilters);
         resetBtn.addEventListener('click', () => {
-            // clear filters
             categoriesEl.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
             priceMinEl.value = priceBounds.min;
             priceMaxEl.value = priceBounds.max;
@@ -287,11 +577,9 @@
             applyFilters();
         });
 
-        // delegate category change to re-run filter
         categoriesEl.addEventListener('change', applyFilters);
         [priceMinEl, priceMaxEl, ratingEl].forEach(e => e.addEventListener('change', applyFilters));
 
-        // favorites + cart persistence
         function loadFavorites(){
             try{ return JSON.parse(localStorage.getItem('favorites')||'[]') }catch(e){return []}
         }
@@ -309,20 +597,18 @@
             else favorites.push(id);
             saveFavorites(favorites);
             updateFavUI();
-            applyFilters(); // if user is viewing favorites
+            applyFilters();
         }
 
         function updateFavUI(){
             const favCount = document.getElementById('favCount');
             if(favorites.length){ favCount.style.display='inline-block'; favCount.textContent = favorites.length } else favCount.style.display='none';
-            // mark buttons
             document.querySelectorAll('.fav-btn').forEach(b=>{
                 const id = Number(b.dataset.id);
                 b.style.color = isFavorite(id) ? '#ef4444' : '#666';
             })
         }
 
-        // cart functions
         function addToCart(id){
             id = Number(id);
             const existing = cart.find(x=>x.id===id);
@@ -378,21 +664,42 @@
             cartFooter.style.display='flex';
             cartItemsCount.textContent = cart.reduce((s,i)=>s+i.qty,0);
 
-            // attach cart listeners
             cartList.querySelectorAll('.qty-plus').forEach(b=>b.addEventListener('click', e=>changeQty(b.dataset.id,1)));
             cartList.querySelectorAll('.qty-minus').forEach(b=>b.addEventListener('click', e=>changeQty(b.dataset.id,-1)));
             cartList.querySelectorAll('.remove-item').forEach(b=>b.addEventListener('click', e=>removeFromCart(b.dataset.id)));
         }
 
+        document.getElementById('checkoutBtn').addEventListener('click', async () => {
+            if (!cart.length) return;
+            
+            try {
+                const response = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items: cart })
+                });
+                
+                if (response.ok) {
+                    alert('Order placed successfully!');
+                    cart = [];
+                    saveCart(cart);
+                    updateCartUI();
+                    document.getElementById('cartPanel').classList.remove('open');
+                } else {
+                    alert('Failed to place order');
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        });
+
         function wireCardButtons(){
-            // use .onclick to avoid duplicate listeners on re-render
             document.querySelectorAll('.add-cart').forEach(b => { b.onclick = () => addToCart(b.dataset.id); });
             document.querySelectorAll('.fav-btn').forEach(b => { b.onclick = () => toggleFavorite(b.dataset.id); });
             updateFavUI();
             updateCartUI();
         }
 
-        // topbar buttons
         const favToggle = document.getElementById('favToggle');
         const cartToggle = document.getElementById('cartToggle');
         const cartPanel = document.getElementById('cartPanel');
@@ -406,14 +713,15 @@
             applyFilters();
         });
 
-
         cartToggle.addEventListener('click', ()=>{ cartPanel.classList.toggle('open'); cartPanel.setAttribute('aria-hidden', cartPanel.classList.contains('open')? 'false':'true'); updateCartUI(); });
         closeCart.addEventListener('click', ()=>{ cartPanel.classList.remove('open'); cartPanel.setAttribute('aria-hidden','true') });
         clearCart.addEventListener('click', ()=>{ cart = []; saveCart(cart); updateCartUI(); });
 
-        // initial UI update
-        updateFavUI(); updateCartUI();
+        updateFavUI();
+        updateCartUI();
+
+        // Check auth on page load
+        checkAuth();
     </script>
-    
 </body>
 </html>

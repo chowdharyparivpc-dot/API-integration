@@ -96,8 +96,29 @@
         .checkout-btn{width:100%;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;margin-top:8px}
         .checkout-btn:hover{background:#1d4ed8}
         
+        /* Details Modal */
+        .details-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:999}
+        .details-modal-overlay.show{display:flex}
+        .details-modal{background:var(--card);border-radius:12px;max-width:600px;width:90%;max-height:90vh;overflow-y:auto;box-shadow:0 18px 40px rgba(2,6,23,0.2);padding:0}
+        .details-header{padding:24px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
+        .details-header h2{margin:0;font-size:24px}
+        .details-close{background:none;border:none;font-size:24px;cursor:pointer}
+        .details-body{padding:24px}
+        .details-image{width:100%;height:300px;object-fit:cover;border-radius:8px;margin-bottom:16px}
+        .details-info{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin:16px 0}
+        .info-item{text-align:center;padding:12px;background:#f3f4f6;border-radius:8px}
+        .info-label{font-size:12px;color:var(--muted);text-transform:uppercase;font-weight:600}
+        .info-value{font-size:18px;font-weight:700;color:var(--accent);margin-top:4px}
+        .ingredients-section{margin:24px 0}
+        .ingredients-section h3{margin:0 0 12px 0;color:#111}
+        .ingredients-list{list-style:none;padding:0;margin:0}
+        .ingredients-list li{padding:8px 0;padding-left:24px;position:relative;color:#111}
+        .ingredients-list li:before{content:'✓';position:absolute;left:0;color:var(--accent);font-weight:bold}
+        .card-clickable{cursor:pointer}
+        .card-clickable:hover{box-shadow:0 10px 25px rgba(16,24,40,0.1);transform:translateY(-2px)}
+        
         @media (max-width:900px){.layout{grid-template-columns:1fr}.sidebar{order:2}}
-        @media (max-width:520px){.topbar{flex-direction:column;align-items:flex-start}.search{width:100%}.auth-modal{padding:20px}}
+        @media (max-width:520px){.topbar{flex-direction:column;align-items:flex-start}.search{width:100%}.auth-modal{padding:20px}.details-modal{width:95%}}
     </style>
 </head>
 <body>
@@ -254,6 +275,48 @@
                         <div style="color:var(--muted);text-align:center"><span id="cartItemsCount">0</span> items in cart</div>
                         <button id="checkoutBtn" class="checkout-btn">Proceed to Checkout</button>
                         <button id="clearCart" class="small-btn" style="width:100%;margin-top:8px">Clear Cart</button>
+                    </div>
+                </div>
+                
+                <!-- Details Modal -->
+                <div id="detailsOverlay" class="details-modal-overlay">
+                    <div class="details-modal">
+                        <div class="details-header">
+                            <h2 id="detailsTitle">Recipe</h2>
+                            <button class="details-close" onclick="closeDetails()">&times;</button>
+                        </div>
+                        <div class="details-body">
+                            <img id="detailsImage" src="" alt="" class="details-image" />
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0">
+                                <div>
+                                    <div style="font-size:12px;color:var(--muted);text-transform:uppercase;font-weight:600">Category</div>
+                                    <div style="font-size:16px;font-weight:600;margin-top:4px" id="detailsCategory">—</div>
+                                </div>
+                                <div style="text-align:center">
+                                    <div style="font-size:12px;color:var(--muted);text-transform:uppercase;font-weight:600">Rating</div>
+                                    <div style="font-size:18px;font-weight:700;color:#f59e0b;margin-top:4px" id="detailsRating">★ —</div>
+                                </div>
+                                <div style="text-align:right">
+                                    <div style="font-size:12px;color:var(--muted);text-transform:uppercase;font-weight:600">Cook Time</div>
+                                    <div style="font-size:18px;font-weight:700;color:var(--accent);margin-top:4px" id="detailsTime">—</div>
+                                </div>
+                            </div>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0">
+                                <div>
+                                    <span style="font-size:12px;color:var(--muted);text-transform:uppercase;font-weight:600">Ingredients</span>
+                                    <div style="font-size:18px;font-weight:700;color:var(--accent);margin-top:4px" id="detailsIngredientsCount">0</div>
+                                </div>
+                                <div>
+                                    <span style="font-size:12px;color:var(--muted);text-transform:uppercase;font-weight:600">Servings</span>
+                                    <div style="font-size:18px;font-weight:700;color:var(--accent);margin-top:4px" id="detailsServings">—</div>
+                                </div>
+                            </div>
+                            <div class="ingredients-section">
+                                <h3>📋 Ingredients</h3>
+                                <ul class="ingredients-list" id="ingredientsList"></ul>
+                            </div>
+                            <button id="detailsAddCart" class="btn" style="width:100%;padding:12px;font-size:14px;margin-top:16px">Add to Cart</button>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -471,19 +534,21 @@
                 const time = getTime(p);
                 const servings = p.servings || p.yield || p.servingsCount || '';
                 const ingredientsCount = Array.isArray(p.ingredients) ? p.ingredients.length : (p.ingredients ? 1 : 0);
+                const rating = p.rating || 0;
 
                 return `
-                    <article class="card" data-id="${p.id}">
+                    <article class="card card-clickable" data-id="${p.id}" onclick="showDetails(${p.id})">
                         <img src="${img}" alt="${escapeHtml(title)}" />
                         <div class="card-body">
                             <h3 class="card-title">${escapeHtml(title)}</h3>
                             <div class="card-sub">${escapeHtml(cat)}</div>
-                            <div style="font-size:13px;color:var(--muted)">Ingredients: ${ingredientsCount} • Servings: ${servings || '—'}</div>
+                            <div style="font-size:13px;color:var(--muted)">
+                                ⭐ ${rating.toFixed(1)} • ⏱ ${time ? time + ' min' : '—'} • 🥘 ${ingredientsCount} items
+                            </div>
                             <div class="price-row">
-                                <div class="price">${time ? time + ' min' : '—'}</div>
                                 <div style="display:flex;gap:8px;align-items:center">
-                                  <button class="icon-btn fav-btn" data-id="${p.id}" title="Toggle favorite">❤</button>
-                                  <button class="btn add-cart" data-id="${p.id}">Add to cart</button>
+                                  <button class="icon-btn fav-btn" data-id="${p.id}" title="Toggle favorite" onclick="event.stopPropagation();toggleFavorite(${p.id})">❤</button>
+                                  <button class="btn add-cart" data-id="${p.id}" onclick="event.stopPropagation();addToCart(${p.id})">Add to cart</button>
                                 </div>
                             </div>
                         </div>
@@ -494,6 +559,54 @@
         function escapeHtml(s){
             return String(s).replace(/[&<>"]+/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
         }
+        
+        // Details Modal Functions
+        function showDetails(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+            
+            const title = product.title || product.name || 'Untitled';
+            const img = product.image || (product.images && product.images[0]) || 'https://via.placeholder.com/400x300';
+            const cat = product.category || product.cuisine || product.type || '—';
+            const time = getTime(product);
+            const rating = product.rating || 0;
+            const servings = product.servings || product.yield || product.servingsCount || '—';
+            const ingredients = Array.isArray(product.ingredients) ? product.ingredients : [];
+            
+            document.getElementById('detailsTitle').textContent = escapeHtml(title);
+            document.getElementById('detailsImage').src = img;
+            document.getElementById('detailsImage').alt = escapeHtml(title);
+            document.getElementById('detailsCategory').textContent = escapeHtml(cat);
+            document.getElementById('detailsRating').textContent = rating ? `⭐ ${rating.toFixed(1)}/5` : '⭐ N/A';
+            document.getElementById('detailsTime').textContent = time ? time + ' min' : '—';
+            document.getElementById('detailsServings').textContent = servings;
+            document.getElementById('detailsIngredientsCount').textContent = ingredients.length;
+            
+            const ingredientsList = document.getElementById('ingredientsList');
+            if (ingredients.length > 0) {
+                ingredientsList.innerHTML = ingredients.map(ing => {
+                    const ingText = typeof ing === 'string' ? ing : (ing.name || JSON.stringify(ing));
+                    return `<li>${escapeHtml(ingText)}</li>`;
+                }).join('');
+            } else {
+                ingredientsList.innerHTML = '<li>No ingredients listed</li>';
+            }
+            
+            document.getElementById('detailsAddCart').onclick = () => {
+                addToCart(id);
+                closeDetails();
+            };
+            
+            document.getElementById('detailsOverlay').classList.add('show');
+        }
+        
+        function closeDetails() {
+            document.getElementById('detailsOverlay').classList.remove('show');
+        }
+        
+        document.getElementById('detailsOverlay').addEventListener('click', (e) => {
+            if (e.target.id === 'detailsOverlay') closeDetails();
+        });
 
         function applyFilters(){
             const q = (searchEl.value || searchEl2.value || '').trim().toLowerCase();

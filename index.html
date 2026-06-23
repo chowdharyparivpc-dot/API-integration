@@ -81,9 +81,9 @@
 
                     <h4>Time Range (min)</h4>
                     <div class="range-row">
-                        <input type="number" id="price-min" style="width:80px;padding:6px;border-radius:6px;border:1px solid #e5e7eb" />
+                        <input type="number" id="price-min" placeholder="Min" style="width:80px;padding:6px;border-radius:6px;border:1px solid #e5e7eb" />
                         <span style="color:var(--muted)">—</span>
-                        <input type="number" id="price-max" style="width:80px;padding:6px;border-radius:6px;border:1px solid #e5e7eb" />
+                        <input type="number" id="price-max" placeholder="Max" style="width:80px;padding:6px;border-radius:6px;border:1px solid #e5e7eb" />
                     </div>
 
                     <h4>Rating</h4>
@@ -202,8 +202,10 @@
             const q = (searchEl.value || searchEl2.value || '').trim().toLowerCase();
 
             const selectedCats = Array.from(categoriesEl.querySelectorAll('input[type="checkbox"]:checked')).map(i=>i.value);
-            const minTime = Number(priceMinEl.value || priceBounds.min);
-            const maxTime = Number(priceMaxEl.value || priceBounds.max);
+            const minTimeInput = priceMinEl.value.trim();
+            const maxTimeInput = priceMaxEl.value.trim();
+            const minTime = minTimeInput ? Number(minTimeInput) : priceBounds.min;
+            const maxTime = maxTimeInput ? Number(maxTimeInput) : priceBounds.max;
             const minRating = Number(ratingEl.value || 0);
 
             let out = products.filter(p => {
@@ -250,8 +252,9 @@
             const min = times.length ? Math.min(...times) : 0;
             const max = times.length ? Math.max(...times) : 0;
             priceBounds = {min, max};
-            priceMinEl.value = min;
-            priceMaxEl.value = max;
+            // Keep inputs empty with placeholders so user knows they can enter values
+            priceMinEl.placeholder = `Min (${min})`;
+            priceMaxEl.placeholder = `Max (${max})`;
         }
 
         // fetch recipes
@@ -278,8 +281,8 @@
         resetBtn.addEventListener('click', () => {
             // clear filters
             categoriesEl.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-            priceMinEl.value = priceBounds.min;
-            priceMaxEl.value = priceBounds.max;
+            priceMinEl.value = '';
+            priceMaxEl.value = '';
             ratingEl.value = 0;
             searchEl.value = '';
             searchEl2.value = '';
@@ -289,7 +292,11 @@
 
         // delegate category change to re-run filter
         categoriesEl.addEventListener('change', applyFilters);
-        [priceMinEl, priceMaxEl, ratingEl].forEach(e => e.addEventListener('change', applyFilters));
+        // Add input event listeners for real-time filtering on time range inputs
+        [priceMinEl, priceMaxEl, ratingEl].forEach(e => {
+            e.addEventListener('input', applyFilters);
+            e.addEventListener('change', applyFilters);
+        });
 
         // favorites + cart persistence
         function loadFavorites(){

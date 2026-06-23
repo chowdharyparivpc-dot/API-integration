@@ -17,36 +17,118 @@ Visit: http://127.0.0.1:5000
 
 ---
 
-## Deployment Options
+## Deployment to Render.com (Recommended - Free Tier)
 
-### Option 1: Render.com (Recommended - Free Tier Available)
+### Prerequisites
+- GitHub account with this repository
+- Render.com account (free)
 
-**Setup:**
-1. Go to [Render.com](https://render.com)
-2. Sign up with GitHub
-3. Create new **Web Service**
-4. Select this GitHub repository
-5. Fill in the service details:
-   - **Name:** elite-eats
+### Step-by-Step Setup:
+
+1. **Prepare Repository**
+   - Push code to GitHub
+   - Ensure `render.yaml` is in the root directory
+   - Verify `requirements.txt` includes: Flask, Flask-SQLAlchemy, Werkzeug, gunicorn
+
+2. **Create Render Service**
+   - Go to https://dashboard.render.com
+   - Click "New" → "Web Service"
+   - Select "Connect a repository" or "Deploy existing code"
+   - Choose this GitHub repository
+
+3. **Configure Service**
+   - **Name:** elite-eats (or your preferred name)
    - **Runtime:** Python 3.11
-   - **Build command:** `pip install -r requirements.txt`
-   - **Start command:** `gunicorn app:app`
-6. Add environment variables:
-   - `PYTHON_VERSION`: 3.11.9
-   - `SECRET_KEY`: Auto-generated
-7. Deploy
+   - **Build Command:** `pip install -r requirements.txt`
+   - **Start Command:** `gunicorn app:app`
+   - **Free Plan:** Select "Free" tier
 
-The `render.yaml` file is already configured for automatic deployment.
+4. **Set Environment Variables**
+   - Click "Environment" tab
+   - Add variable:
+     - Key: `SECRET_KEY`
+     - Value: Leave empty (Render will auto-generate)
+   - Add if needed:
+     - Key: `DATABASE_URL`
+     - Value: Will use SQLite by default (stored in /data volume)
+
+5. **Deploy**
+   - Click "Deploy"
+   - Wait for build to complete (2-3 minutes)
+   - Check logs for any errors
+   - Your app will be available at: `https://elite-eats.onrender.com`
+
+### After Deployment
+- Visit your live app URL
+- Test all features: login, search, time range filter, cart
+- Create a test user account
+- Verify filters are working correctly
+
+### Troubleshooting
+
+**Build Fails:**
+- Check logs in Render dashboard
+- Verify all dependencies are in `requirements.txt`
+- Ensure Python version compatibility
+
+**App Crashes:**
+- Check "Logs" tab in Render dashboard
+- Verify environment variables are set
+- Check that Flask can connect to database
+
+**Database Issues:**
+- First deploy creates SQLite database
+- Persistent data stored in `/data` volume on Render free tier
+- For production, upgrade to paid plan with PostgreSQL
 
 ---
 
-### Option 2: Heroku (Paid - Coming Soon)
+## Alternative: Heroku Deployment (Paid)
 
-**Setup:**
-1. Install Heroku CLI
-2. Login: `heroku login`
-3. Create app: `heroku create your-app-name`
-4. Deploy: `git push heroku main`
+**Note:** Heroku free tier has ended. Paid plans start at $7/month.
+
+```bash
+# Install Heroku CLI from: https://devcenter.heroku.com/articles/heroku-cli
+heroku login
+heroku create your-app-name
+git push heroku main
+```
+
+---
+
+## Environment Variables Reference
+
+| Variable | Purpose | Required |
+|----------|---------|----------|
+| `SECRET_KEY` | Session encryption key | Auto-generated on Render |
+| `DATABASE_URL` | Database connection string | Optional (uses SQLite) |
+| `PYTHON_VERSION` | Python version | 3.11.9 |
+| `PORT` | Server port | Auto-set by Render (5000) |
+
+---
+
+## Features Checklist
+
+After deployment, verify these features work:
+
+- ✅ User registration and login
+- ✅ Recipe search and filtering
+- ✅ **Time range filter** (fixed in this update)
+- ✅ Category filtering
+- ✅ Rating filter
+- ✅ Favorites system
+- ✅ Shopping cart
+- ✅ Order management
+- ✅ User profile page
+
+---
+
+## Performance Notes
+
+- Free tier on Render may have cold starts (first request takes 15-30 seconds)
+- Database is SQLite with 512MB storage limit
+- For production traffic, upgrade to paid tier with auto-scaling
+
 
 The `Procfile` is already configured.
 

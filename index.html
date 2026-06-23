@@ -204,8 +204,8 @@
             const selectedCats = Array.from(categoriesEl.querySelectorAll('input[type="checkbox"]:checked')).map(i=>i.value);
             const minTimeInput = priceMinEl.value.trim();
             const maxTimeInput = priceMaxEl.value.trim();
-            const minTime = minTimeInput ? Number(minTimeInput) : priceBounds.min;
-            const maxTime = maxTimeInput ? Number(maxTimeInput) : priceBounds.max;
+            const minTime = minTimeInput ? Number(minTimeInput) : 0;
+            const maxTime = maxTimeInput ? Number(maxTimeInput) : 999999;
             const minRating = Number(ratingEl.value || 0);
 
             let out = products.filter(p => {

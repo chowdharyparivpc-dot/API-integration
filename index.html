@@ -85,6 +85,9 @@
                         <span style="color:var(--muted)">—</span>
                         <input type="number" id="price-max" placeholder="Max" style="width:80px;padding:6px;border-radius:6px;border:1px solid #e5e7eb" />
                     </div>
+                    <div style="font-size:11px;color:var(--muted);margin-top:4px">
+                        <div id="timeDebug"></div>
+                    </div>
 
                     <h4>Rating</h4>
                     <select id="rating" class="select">
@@ -152,13 +155,14 @@
 
         function getTime(p){
             // possible time fields in recipe objects
-            const keys = ['time','totalTime','cookTime','prepTime','duration','readyInMinutes'];
+            const keys = ['time','totalTime','cookTime','prepTime','duration','readyInMinutes','prepTimeMinutes','cookTimeMinutes'];
             for(const k of keys){
-                if(p[k] != null){
+                if(p[k] != null && p[k] !== ''){
                     const n = Number(p[k]);
-                    if(!Number.isNaN(n)) return n;
+                    if(!Number.isNaN(n) && n > 0) return n;
                 }
             }
+            // If no time field found, return 0
             return 0;
         }
 
@@ -202,11 +206,19 @@
             const q = (searchEl.value || searchEl2.value || '').trim().toLowerCase();
 
             const selectedCats = Array.from(categoriesEl.querySelectorAll('input[type="checkbox"]:checked')).map(i=>i.value);
-            const minTimeInput = priceMinEl.value.trim();
-            const maxTimeInput = priceMaxEl.value.trim();
-            const minTime = minTimeInput ? Number(minTimeInput) : 0;
-            const maxTime = maxTimeInput ? Number(maxTimeInput) : 999999;
+            
+            // Handle number inputs properly
+            const minTimeInput = priceMinEl.value ? parseFloat(priceMinEl.value) : null;
+            const maxTimeInput = priceMaxEl.value ? parseFloat(priceMaxEl.value) : null;
+            const minTime = minTimeInput !== null ? minTimeInput : 0;
+            const maxTime = maxTimeInput !== null ? maxTimeInput : 999999;
             const minRating = Number(ratingEl.value || 0);
+
+            // Show debug info
+            const debugEl = document.getElementById('timeDebug');
+            debugEl.innerHTML = `Filtering: ${minTime}-${maxTime} min`;
+
+            console.log('Filter applied - Min:', minTime, 'Max:', maxTime, 'Products:', products.length);
 
             let out = products.filter(p => {
                 const title = (p.title || p.name || '').toString().toLowerCase();
